@@ -6,9 +6,9 @@ import org.json.JSONObject;
 
 /*TODO:
 * Clean code
-* add args value to change increment
-* add a loop and a sleep value !! CHOOSE API REQUEST FREQUENCY WISELY !!
-*
+* add args value to change increment or conf file
+* add a loop and a sleep value (thread pause/wait ?)
+* !! CHOOSE API REQUEST FREQUENCY WISELY !!
 **/
 
 
@@ -42,14 +42,9 @@ public class JsonReader {
         subWriter.close();
     }
 
-    public static void main(String[] args) throws IOException, JSONException {
-        int increment = 5000;
-        String apiKey = "AIzaSyBU_oWEIULi3-n96vWKETYCMsldYDAlz2M";// random API key I found on the web
-        String channel = "UC7tdoGx0eQfRJm9Qj6GCs0A";//nourish. channel
-
+    public static String getSubNumber(String apiKey, String channel) throws IOException, JSONException {
         JSONObject json = readJsonFromUrl("https://www.googleapis.com/youtube/v3/channels?part=statistics&id="+channel+"&key="+apiKey);
-        //System.out.println(json.toString());
-        String sub = new JSONObject((
+        return new JSONObject((
                 new JSONObject(json
                         .get("items")
                         .toString()
@@ -58,9 +53,32 @@ public class JsonReader {
                 .toString())
                 .get("subscriberCount")
                 .toString();
+    }
+
+    public static void main(String[] args) {
+        int increment = 5000;
+        String apiKey = "PUT_YOUR_API_KEY_HERE";// random API key I found on the web
+        String channel = "UC7tdoGx0eQfRJm9Qj6GCs0A";//nourish. channel
+        
+        //System.out.println(json.toString());
+        String sub = null;
+        try {
+            sub = getSubNumber(apiKey,channel);
+        } catch (IOException e) {
+            System.out.println("I/O Error\n");
+            e.printStackTrace();
+        } catch (JSONException e) {
+            System.out.println("JSON Error\n");
+            e.printStackTrace();
+        }
         int actualSub = Integer.parseInt(sub);
         int goal = increment*((actualSub/increment)+1);
-        writer(actualSub+"\\"+goal);
+        try {
+            writer(actualSub+"\\"+goal);
+        } catch (IOException e) {
+            System.out.println("I/O Error : writer error\n");
+            e.printStackTrace();
+        }
         System.out.println(actualSub+"\\"+goal);
     }
 }
